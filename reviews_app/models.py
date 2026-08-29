@@ -1,3 +1,36 @@
+# Third-party
+from django.conf import settings
 from django.db import models
 
-# Create your models here.
+
+class Review(models.Model):
+    """A customer's rating of a business user. One review per pair."""
+
+    business_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='reviews_received',
+    )
+    reviewer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='reviews_given',
+    )
+    rating = models.PositiveSmallIntegerField()
+    description = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Review'
+        verbose_name_plural = 'Reviews'
+        ordering = ['-updated_at']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['business_user', 'reviewer'],
+                name='one_review_per_business_user',
+            )
+        ]
+
+    def __str__(self):
+        return f'{self.reviewer.username} -> {self.business_user.username} ({self.rating})'
