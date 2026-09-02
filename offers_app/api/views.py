@@ -4,6 +4,7 @@ from rest_framework import filters, generics, permissions
 
 # Local imports
 from ..models import Offer, OfferDetail
+from .pagination import OfferPagination
 from .permissions import IsBusinessUser, IsOfferOwner
 from .serializers import (
     OfferCreateUpdateSerializer,
@@ -16,6 +17,7 @@ class OfferListCreateView(generics.ListCreateAPIView):
     """GET (public, filterable/paginated) and POST (business users only)."""
 
     queryset = Offer.objects.all()
+    pagination_class = OfferPagination
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly, IsBusinessUser]
     filter_backends = [DjangoFilterBackend,

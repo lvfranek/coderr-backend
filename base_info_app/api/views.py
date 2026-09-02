@@ -13,6 +13,10 @@ from reviews_app.models import Review
 class BaseInfoView(APIView):
     """GET /api/base-info/ - public platform-wide statistics."""
 
+    # Endpoint is fully public: skip authentication entirely so a stale /
+    # invalid "Authorization: Token ..." header from the frontend cannot make
+    # TokenAuthentication raise AuthenticationFailed (401) before AllowAny runs.
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     def get(self, request):
