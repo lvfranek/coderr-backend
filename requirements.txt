@@ -4,5 +4,9 @@ Django==6.1
 django-cors-headers==4.9.0
 django-filter==26.1
 djangorestframework==3.18.0
+flake8==7.3.0
+mccabe==0.7.0
 pillow==12.3.0
+pycodestyle==2.14.0
+pyflakes==3.4.0
 sqlparse==0.6.0

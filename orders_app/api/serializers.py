@@ -3,7 +3,6 @@ from rest_framework import serializers
 
 # Local imports
 from offers_app.models import OfferDetail
-from profile_app.models import UserProfile
 from ..models import Order
 
 

@@ -5,7 +5,7 @@ from rest_framework.test import APITestCase
 
 # Local imports
 from profile_app.models import UserProfile
-from .models import Offer, OfferDetail
+from .models import OfferDetail
 
 
 def build_offer_payload(title='Test Offer'):
