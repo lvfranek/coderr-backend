@@ -33,8 +33,17 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class ReviewUpdateSerializer(serializers.ModelSerializer):
-    """Used for PATCH - only rating and description are editable."""
+    """Used for PATCH - only rating and description are editable.
+
+    The response still returns the full review representation.
+    """
 
     class Meta:
         model = Review
-        fields = ['id', 'rating', 'description']
+        fields = [
+            'id', 'business_user', 'reviewer', 'rating', 'description',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = [
+            'business_user', 'reviewer', 'created_at', 'updated_at',
+        ]
