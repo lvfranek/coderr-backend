@@ -9,16 +9,30 @@ from profile_app.models import UserProfile
 from .models import Order
 
 
+def make_user(username, user_type):
+    # Create a user plus its matching profile in one call.
+    user = User.objects.create_user(username=username, password='pass123')
+    UserProfile.objects.create(user=user, type=user_type)
+    return user
+
+
+def make_order(customer, business, **overrides):
+    # Create an order with sensible defaults, overridable per test.
+    fields = dict(
+        title='Test', revisions=1, delivery_time_in_days=5, price=100,
+        features=['A'], offer_type='basic',
+    )
+    fields.update(overrides)
+    return Order.objects.create(
+        customer_user=customer, business_user=business, **fields)
+
+
 class OrderListCreateTests(APITestCase):
     """Tests for GET/POST /api/orders/"""
 
     def setUp(self):
-        self.business_user = User.objects.create_user(
-            username='biz', password='pass123')
-        UserProfile.objects.create(user=self.business_user, type='business')
-        self.customer_user = User.objects.create_user(
-            username='cust', password='pass123')
-        UserProfile.objects.create(user=self.customer_user, type='customer')
+        self.business_user = make_user('biz', 'business')
+        self.customer_user = make_user('cust', 'customer')
         offer = Offer.objects.create(user=self.business_user, title='Offer')
         self.detail = OfferDetail.objects.create(
             offer=offer, title='Basic', revisions=1, delivery_time_in_days=5,
@@ -63,20 +77,12 @@ class OrderUpdateDeleteTests(APITestCase):
     """Tests for PATCH/DELETE /api/orders/{id}/"""
 
     def setUp(self):
-        self.business_user = User.objects.create_user(
-            username='biz', password='pass123')
-        UserProfile.objects.create(user=self.business_user, type='business')
-        self.customer_user = User.objects.create_user(
-            username='cust', password='pass123')
-        UserProfile.objects.create(user=self.customer_user, type='customer')
+        self.business_user = make_user('biz', 'business')
+        self.customer_user = make_user('cust', 'customer')
         self.admin = User.objects.create_superuser(
             username='admin', password='pass123', email='admin@mail.de'
         )
-        self.order = Order.objects.create(
-            customer_user=self.customer_user, business_user=self.business_user,
-            title='Test', revisions=1, delivery_time_in_days=5, price=100,
-            features=['A'], offer_type='basic',
-        )
+        self.order = make_order(self.customer_user, self.business_user)
         self.url = f'/api/orders/{self.order.id}/'
 
     def test_patch_status_as_business_user_success(self):
@@ -104,22 +110,10 @@ class OrderCountTests(APITestCase):
     """Tests for /api/order-count/ and /api/completed-order-count/"""
 
     def setUp(self):
-        self.business_user = User.objects.create_user(
-            username='biz', password='pass123')
-        UserProfile.objects.create(user=self.business_user, type='business')
-        self.customer_user = User.objects.create_user(
-            username='cust', password='pass123')
-        UserProfile.objects.create(user=self.customer_user, type='customer')
-        Order.objects.create(
-            customer_user=self.customer_user, business_user=self.business_user,
-            title='A', revisions=1, delivery_time_in_days=5, price=100,
-            features=[], offer_type='basic', status='in_progress',
-        )
-        Order.objects.create(
-            customer_user=self.customer_user, business_user=self.business_user,
-            title='B', revisions=1, delivery_time_in_days=5, price=100,
-            features=[], offer_type='basic', status='completed',
-        )
+        self.business_user = make_user('biz', 'business')
+        self.customer_user = make_user('cust', 'customer')
+        make_order(self.customer_user, self.business_user, status='in_progress')
+        make_order(self.customer_user, self.business_user, status='completed')
         self.client.force_authenticate(user=self.customer_user)
 
     def test_order_count_success(self):

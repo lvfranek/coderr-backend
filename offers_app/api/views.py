@@ -27,25 +27,26 @@ class OfferListCreateView(generics.ListCreateAPIView):
     ordering_fields = ['updated_at']
     search_fields = ['title', 'description']
 
+    # Maps a query param to the ORM lookup it drives.
+    INT_FILTERS = {
+        'creator_id': 'user_id',
+        'min_price': 'details__price__gte',
+        'max_delivery_time': 'details__delivery_time_in_days__lte',
+    }
+
     def get_serializer_class(self):
+        # Use the write serializer for POST, the read serializer otherwise.
         if self.request.method == 'POST':
             return OfferCreateUpdateSerializer
         return OfferSerializer
 
     def get_queryset(self):
+        # Apply each optional integer filter that was actually supplied.
         queryset = super().get_queryset()
-        creator_id = self._int_param('creator_id')
-        min_price = self._int_param('min_price')
-        max_delivery_time = self._int_param('max_delivery_time')
-        if creator_id is not None:
-            queryset = queryset.filter(user_id=creator_id)
-        if min_price is not None:
-            queryset = queryset.filter(
-                details__price__gte=min_price).distinct()
-        if max_delivery_time is not None:
-            queryset = queryset.filter(
-                details__delivery_time_in_days__lte=max_delivery_time
-            ).distinct()
+        for param, lookup in self.INT_FILTERS.items():
+            value = self._int_param(param)
+            if value is not None:
+                queryset = queryset.filter(**{lookup: value}).distinct()
         return queryset
 
     def _int_param(self, name):
@@ -54,8 +55,10 @@ class OfferListCreateView(generics.ListCreateAPIView):
         Raises a 400 (instead of a 500) when the value isn't a valid integer.
         """
         raw = self.request.query_params.get(name)
+        # Treat a missing or empty param as "no filter".
         if raw in (None, ''):
             return None
+        # Reject anything that isn't a plain integer with a 400.
         try:
             return int(raw)
         except (TypeError, ValueError):
@@ -69,6 +72,7 @@ class OfferDetailUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated, IsOfferOwner]
 
     def get_serializer_class(self):
+        # Write serializer for PATCH/PUT, read serializer for GET.
         if self.request.method in ('PATCH', 'PUT'):
             return OfferCreateUpdateSerializer
         return OfferSerializer

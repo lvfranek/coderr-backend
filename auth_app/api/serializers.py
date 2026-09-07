@@ -19,17 +19,20 @@ class RegistrationSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
 
     def validate_email(self, value):
+        # Email addresses must be unique across all users.
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError('This email is already in use.')
         return value
 
     def validate_username(self, value):
+        # Usernames must be unique across all users.
         if User.objects.filter(username=value).exists():
             raise serializers.ValidationError(
                 'This username is already taken.')
         return value
 
     def validate(self, attrs):
+        # The two password fields have to match.
         if attrs['password'] != attrs['repeated_password']:
             raise serializers.ValidationError(
                 {'repeated_password': 'Passwords do not match.'}
@@ -37,6 +40,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
+        # Create the User and its matching UserProfile in one step.
         user_type = validated_data.pop('type')
         validated_data.pop('repeated_password')
         user = User.objects.create_user(
@@ -55,6 +59,7 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
+        # Verify the credentials and stash the user for the view.
         user = authenticate(
             username=attrs['username'], password=attrs['password'])
         if not user:

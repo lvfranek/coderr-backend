@@ -20,6 +20,7 @@ class BaseInfoView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        # Aggregate the four public counters into a single response.
         review_count = Review.objects.count()
         average_rating = Review.objects.aggregate(
             avg=Avg('rating'))['avg'] or 0

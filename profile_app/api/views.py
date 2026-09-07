@@ -22,6 +22,7 @@ class ProfileDetailView(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated, IsProfileOwner]
 
     def perform_update(self, serializer):
+        # Extra owner guard on top of the permission class.
         if serializer.instance.user != self.request.user:
             raise PermissionDenied("You can only edit your own profile.")
         serializer.save()

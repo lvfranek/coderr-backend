@@ -6,8 +6,7 @@ from ..models import Offer, OfferDetail
 
 
 class OfferDetailSerializer(serializers.ModelSerializer):
-    """Full representation of one pricing tier, used for create/update and
-    for the standalone GET /api/offerdetails/{id}/ endpoint."""
+    """Full representation of one pricing tier."""
 
     class Meta:
         model = OfferDetail
@@ -18,7 +17,7 @@ class OfferDetailSerializer(serializers.ModelSerializer):
 
 
 class OfferDetailLinkSerializer(serializers.ModelSerializer):
-    """Just id + url, used inside the Offer list/detail response."""
+    """Compact id + url reference used inside the Offer response."""
 
     url = serializers.SerializerMethodField()
 
@@ -27,11 +26,12 @@ class OfferDetailLinkSerializer(serializers.ModelSerializer):
         fields = ['id', 'url']
 
     def get_url(self, obj):
+        # Build the relative URL to the detail endpoint.
         return f'/offerdetails/{obj.id}/'
 
 
 class OfferSerializer(serializers.ModelSerializer):
-    """Used for GET list/detail and PATCH of a single Offer."""
+    """Read serializer for GET list/detail and the PATCH response."""
 
     details = OfferDetailLinkSerializer(many=True, read_only=True)
     min_price = serializers.SerializerMethodField()
@@ -48,14 +48,19 @@ class OfferSerializer(serializers.ModelSerializer):
         read_only_fields = ['user', 'created_at', 'updated_at']
 
     def get_min_price(self, obj):
-        return obj.details.order_by('price').values_list('price', flat=True).first()
+        # Return the lowest price across all pricing tiers.
+        return obj.details.order_by('price').values_list(
+            'price', flat=True
+        ).first()
 
     def get_min_delivery_time(self, obj):
+        # Return the fastest delivery time across all pricing tiers.
         return obj.details.order_by('delivery_time_in_days').values_list(
             'delivery_time_in_days', flat=True
         ).first()
 
     def get_user_details(self, obj):
+        # Expose a small subset of the offer creator's profile.
         return {
             'first_name': obj.user.first_name,
             'last_name': obj.user.last_name,
@@ -64,7 +69,7 @@ class OfferSerializer(serializers.ModelSerializer):
 
 
 class OfferCreateUpdateSerializer(serializers.ModelSerializer):
-    """Used for POST (requires exactly 3 details) and PATCH (partial details)."""
+    """Write serializer for POST (exactly 3 details) and PATCH (partial)."""
 
     details = OfferDetailSerializer(many=True)
 
@@ -73,9 +78,11 @@ class OfferCreateUpdateSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'image', 'description', 'details']
 
     def validate_details(self, value):
+        # A new offer must be created with exactly three pricing tiers.
         if self.instance is None and len(value) != 3:
             raise serializers.ValidationError(
                 'An offer must contain exactly 3 details.')
+        # On update every detail must carry its offer_type as identifier.
         if self.instance is not None and any(
             not detail.get('offer_type') for detail in value
         ):
@@ -84,6 +91,7 @@ class OfferCreateUpdateSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
+        # Create the offer for the requesting user plus its three details.
         details_data = validated_data.pop('details')
         offer = Offer.objects.create(
             user=self.context['request'].user, **validated_data)
@@ -92,6 +100,7 @@ class OfferCreateUpdateSerializer(serializers.ModelSerializer):
         return offer
 
     def update(self, instance, validated_data):
+        # Update the offer fields, then patch any details that were sent.
         details_data = validated_data.pop('details', None)
         instance = super().update(instance, validated_data)
         if details_data:
@@ -99,10 +108,12 @@ class OfferCreateUpdateSerializer(serializers.ModelSerializer):
         return instance
 
     def _update_details(self, instance, details_data):
+        # Patch each detail in place, matched by its offer_type.
         for detail_data in details_data:
-            offer_type = detail_data.get('offer_type')
-            detail = instance.details.filter(offer_type=offer_type).first()
-            if detail:
-                for attr, value in detail_data.items():
-                    setattr(detail, attr, value)
-                detail.save()
+            detail = instance.details.filter(
+                offer_type=detail_data.get('offer_type')).first()
+            if not detail:
+                continue
+            for attr, value in detail_data.items():
+                setattr(detail, attr, value)
+            detail.save()

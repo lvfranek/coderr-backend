@@ -29,11 +29,13 @@ class OrderCreateSerializer(serializers.Serializer):
     offer_detail_id = serializers.IntegerField()
 
     def validate_offer_detail_id(self, value):
+        # The referenced pricing tier has to exist.
         if not OfferDetail.objects.filter(id=value).exists():
             raise serializers.ValidationError('OfferDetail not found.')
         return value
 
     def create(self, validated_data):
+        # Snapshot the offer detail's fields onto a new in-progress order.
         detail = OfferDetail.objects.get(id=validated_data['offer_detail_id'])
         customer = self.context['request'].user
         return Order.objects.create(

@@ -166,5 +166,5 @@ REST_FRAMEWORK = {
     ],
 }
 
-# Frontend läuft auf anderem Port (z.B. Live Server) -> CORS erlauben
+# The frontend runs on a different port (e.g. Live Server), so allow CORS.
 CORS_ALLOW_ALL_ORIGINS = True
