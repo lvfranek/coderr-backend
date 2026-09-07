@@ -75,6 +75,17 @@ class OfferListCreateTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
 
+    def test_filter_by_max_delivery_time(self):
+        self.client.force_authenticate(user=self.business_user)
+        self.client.post(self.url, build_offer_payload(), format='json')
+        response = self.client.get(self.url, {'max_delivery_time': 5})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_non_numeric_filter_returns_400(self):
+        response = self.client.get(self.url, {'max_delivery_time': 'abc'})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 class OfferDetailUpdateDeleteTests(APITestCase):
     """Tests for GET/PATCH/DELETE /api/offers/{id}/"""
@@ -122,6 +133,14 @@ class OfferDetailUpdateDeleteTests(APITestCase):
         updated_detail = OfferDetail.objects.get(
             offer_id=self.offer_id, offer_type='basic')
         self.assertEqual(float(updated_detail.price), 150.0)
+
+    def test_patch_offer_detail_without_offer_type_returns_400(self):
+        response = self.client.patch(
+            self.url,
+            {'details': [{'price': 150}]},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_delete_offer_as_owner_success(self):
         response = self.client.delete(self.url)

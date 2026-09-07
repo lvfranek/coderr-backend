@@ -96,6 +96,17 @@ class ReviewUpdateDeleteTests(APITestCase):
         response = self.client.patch(self.url, {'rating': 5})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_patch_response_contains_full_representation(self):
+        self.client.force_authenticate(user=self.customer)
+        response = self.client.patch(self.url, {'rating': 5})
+        self.assertEqual(
+            set(response.data),
+            {'id', 'business_user', 'reviewer', 'rating', 'description',
+             'created_at', 'updated_at'},
+        )
+        self.assertEqual(response.data['business_user'], self.business.id)
+        self.assertEqual(response.data['reviewer'], self.customer.id)
+
     def test_patch_others_review_forbidden(self):
         self.client.force_authenticate(user=self.other_customer)
         response = self.client.patch(self.url, {'rating': 1})
