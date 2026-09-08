@@ -1,23 +1,21 @@
-# Third-party
 from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-# Local imports
 from offers_app.models import Offer, OfferDetail
 from profile_app.models import UserProfile
 from .models import Order
 
 
 def make_user(username, user_type):
-    # Create a user plus its matching profile in one call.
+    """Create a user plus its matching profile in one call."""
     user = User.objects.create_user(username=username, password='pass123')
     UserProfile.objects.create(user=user, type=user_type)
     return user
 
 
 def make_order(customer, business, **overrides):
-    # Create an order with sensible defaults, overridable per test.
+    """Create an order with sensible defaults, overridable per test."""
     fields = dict(
         title='Test', revisions=1, delivery_time_in_days=5, price=100,
         features=['A'], offer_type='basic',

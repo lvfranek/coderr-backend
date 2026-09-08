@@ -1,16 +1,14 @@
-# Third-party
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-# Local imports
 from .serializers import LoginSerializer, RegistrationSerializer
 
 
 def build_auth_response(token, user):
-    # Shared token + user payload returned by registration and login.
+    """Shared token + user payload returned by registration and login."""
     return {
         'token': token.key,
         'username': user.username,
@@ -25,7 +23,7 @@ class RegistrationView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        # Validate the payload, create the user, then hand back a fresh token.
+        """Validate the payload, create the user, then hand back a fresh token."""
         serializer = RegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
@@ -40,7 +38,7 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        # Validate the credentials, then return the user's token.
+        """Validate the credentials, then return the user's token."""
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']

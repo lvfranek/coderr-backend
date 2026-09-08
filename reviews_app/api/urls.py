@@ -1,7 +1,5 @@
-# Third-party
 from django.urls import path
 
-# Local imports
 from .views import ReviewListCreateView, ReviewUpdateDeleteView
 
 app_name = 'reviews_app'

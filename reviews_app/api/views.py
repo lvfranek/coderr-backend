@@ -1,8 +1,6 @@
-# Third-party
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, permissions
 
-# Local imports
 from ..models import Review
 from .permissions import IsCustomerUser, IsReviewOwner
 from .serializers import ReviewSerializer, ReviewUpdateSerializer

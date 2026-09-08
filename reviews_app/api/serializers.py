@@ -1,7 +1,5 @@
-# Third-party
 from rest_framework import serializers
 
-# Local imports
 from ..models import Review
 
 
@@ -17,7 +15,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only_fields = ['reviewer', 'created_at', 'updated_at']
 
     def validate(self, attrs):
-        # A reviewer may leave only one review per business user.
+        """A reviewer may leave only one review per business user."""
         request = self.context['request']
         business_user = attrs.get('business_user')
         if self.instance is None and Review.objects.filter(
@@ -29,7 +27,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        # The reviewer is always the requesting user, never client input.
+        """The reviewer is always the requesting user, never client input."""
         validated_data['reviewer'] = self.context['request'].user
         return super().create(validated_data)
 

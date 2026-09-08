@@ -1,10 +1,8 @@
-# Third-party
 from django.db.models import Q
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-# Local imports
 from profile_app.models import UserProfile
 from ..models import Order
 from .permissions import IsBusinessUserForOrder, IsCustomerUser, IsStaffUser
@@ -12,7 +10,7 @@ from .serializers import OrderCreateSerializer, OrderSerializer
 
 
 def business_status_count(business_user_id, status_value, key):
-    # 404 unless the id is a real business user, otherwise the status count.
+    """404 unless the id is a real business user, otherwise the status count."""
     if not UserProfile.objects.filter(
         user_id=business_user_id, type=UserProfile.UserType.BUSINESS
     ).exists():
@@ -32,20 +30,20 @@ class OrderListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated, IsCustomerUser]
 
     def get_queryset(self):
-        # Show only orders where the user is buyer or seller.
+        """Show only orders where the user is buyer or seller."""
         user = self.request.user
         return Order.objects.filter(
             Q(customer_user=user) | Q(business_user=user)
         )
 
     def get_serializer_class(self):
-        # Slim input serializer for POST, full serializer otherwise.
+        """Slim input serializer for POST, full serializer otherwise."""
         if self.request.method == 'POST':
             return OrderCreateSerializer
         return OrderSerializer
 
     def create(self, request, *args, **kwargs):
-        # Create from an offer_detail_id, then respond with the full order.
+        """Create from an offer_detail_id, then respond with the full order."""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         order = serializer.save()
@@ -63,7 +61,7 @@ class OrderUpdateDeleteView(generics.UpdateAPIView, generics.DestroyAPIView):
     ]
 
     def get_permissions(self):
-        # DELETE is staff-only; PATCH is limited to the order's business user.
+        """DELETE is staff-only; PATCH is limited to the order's business user."""
         if self.request.method == 'DELETE':
             return [permissions.IsAuthenticated(), IsStaffUser()]
         return [permissions.IsAuthenticated(), IsBusinessUserForOrder()]

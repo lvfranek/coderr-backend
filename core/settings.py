@@ -15,11 +15,13 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+"""Build paths inside the project like this: BASE_DIR / 'subdir'."""
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load environment variables from a local .env file (not committed).
-# See .env.template for the expected keys.
+"""
+Load environment variables from a local .env file (not committed).
+See .env.template for the expected keys.
+"""
 load_dotenv(BASE_DIR / '.env')
 
 
@@ -30,13 +32,15 @@ def env_bool(name, default=False):
     }
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+"""
+Quick-start development settings - unsuitable for production
+See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+"""
 
-# SECURITY WARNING: keep the secret key used in production secret!
+"""SECURITY WARNING: keep the secret key used in production secret!"""
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
-# SECURITY WARNING: don't run with debug turned on in production!
+"""SECURITY WARNING: don't run with debug turned on in production!"""
 DEBUG = env_bool('DJANGO_DEBUG', default=False)
 
 ALLOWED_HOSTS = [
@@ -45,8 +49,7 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
-
-# Application definition
+"""Application definition"""
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -55,12 +58,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 3rd party
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
     'django_filters',
-    # local apps
     'auth_app',
     'profile_app',
     'offers_app',
@@ -99,9 +100,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+"""
+Database
+https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+"""
 
 DATABASES = {
     'default': {
@@ -110,9 +112,10 @@ DATABASES = {
     }
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
+"""
+Password validation
+https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
+"""
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -129,9 +132,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
+"""
+Internationalization
+https://docs.djangoproject.com/en/6.0/topics/i18n/
+"""
 
 LANGUAGE_CODE = 'en-us'
 
@@ -141,15 +145,21 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
+"""
+Static files (CSS, JavaScript, Images)
+https://docs.djangoproject.com/en/6.0/howto/static-files/
+"""
 
 STATIC_URL = 'static/'
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+"""
+No global pagination: the Coderr frontend expects plain arrays from the
+list endpoints (profiles, reviews, orders). Only GET /api/offers/ is
+paginated, via OfferPagination set explicitly on OfferListCreateView.
+"""
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
@@ -158,13 +168,10 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
-    # No global pagination: the Coderr frontend expects plain arrays from the
-    # list endpoints (profiles, reviews, orders). Only GET /api/offers/ is
-    # paginated, via OfferPagination set explicitly on OfferListCreateView.
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
 }
 
-# The frontend runs on a different port (e.g. Live Server), so allow CORS.
+"""The frontend runs on a different port (e.g. Live Server), so allow CORS."""
 CORS_ALLOW_ALL_ORIGINS = True

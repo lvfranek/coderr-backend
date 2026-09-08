@@ -1,7 +1,5 @@
-# Third-party
 from django.urls import path
 
-# Local imports
 from .views import LoginView, RegistrationView
 
 app_name = 'auth_app'

@@ -1,26 +1,26 @@
-# Third-party
 from django.db.models import Avg
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-# Local imports
 from offers_app.models import Offer
 from profile_app.models import UserProfile
 from reviews_app.models import Review
 
 
 class BaseInfoView(APIView):
-    """GET /api/base-info/ - public platform-wide statistics."""
+    """GET /api/base-info/ - public platform-wide statistics.
 
-    # Endpoint is fully public: skip authentication entirely so a stale /
-    # invalid "Authorization: Token ..." header from the frontend cannot make
-    # TokenAuthentication raise AuthenticationFailed (401) before AllowAny runs.
+    The endpoint is fully public: it skips authentication entirely so a stale
+    or invalid "Authorization: Token ..." header from the frontend cannot make
+    TokenAuthentication raise AuthenticationFailed (401) before AllowAny runs.
+    """
+
     authentication_classes = []
     permission_classes = [AllowAny]
 
     def get(self, request):
-        # Aggregate the four public counters into a single response.
+        """Aggregate the four public counters into a single response."""
         review_count = Review.objects.count()
         average_rating = Review.objects.aggregate(
             avg=Avg('rating'))['avg'] or 0

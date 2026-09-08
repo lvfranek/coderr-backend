@@ -1,7 +1,5 @@
-# Third-party
 from rest_framework import serializers
 
-# Local imports
 from ..models import UserProfile
 
 
@@ -25,7 +23,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ['user', 'type', 'created_at']
 
     def update(self, instance, validated_data):
-        # Write the nested user fields first, then the profile fields.
+        """Write the nested user fields first, then the profile fields."""
         user_data = validated_data.pop('user', {})
         user = instance.user
         for attr, value in user_data.items():

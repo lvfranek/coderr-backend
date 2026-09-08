@@ -1,8 +1,6 @@
-# Third-party
 from rest_framework import generics, permissions
 from rest_framework.exceptions import PermissionDenied
 
-# Local imports
 from ..models import UserProfile
 from .permissions import IsProfileOwner
 from .serializers import (
@@ -22,7 +20,7 @@ class ProfileDetailView(generics.RetrieveUpdateAPIView):
     permission_classes = [permissions.IsAuthenticated, IsProfileOwner]
 
     def perform_update(self, serializer):
-        # Extra owner guard on top of the permission class.
+        """Extra owner guard on top of the permission class."""
         if serializer.instance.user != self.request.user:
             raise PermissionDenied("You can only edit your own profile.")
         serializer.save()

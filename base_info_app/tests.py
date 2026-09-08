@@ -1,9 +1,7 @@
-# Third-party
 from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-# Local imports
 from offers_app.models import Offer
 from profile_app.models import UserProfile
 from reviews_app.models import Review
