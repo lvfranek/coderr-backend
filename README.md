@@ -135,7 +135,7 @@ Authorization: Token <your-token>
 
 The backend ships with **56 tests** (Django `APITestCase`), one `tests.py`
 per app. They cover the happy paths plus permission, ownership, validation
-and authentication edge cases for every endpoint.
+and authentication edge cases for every endpoint
 
 ### Running the tests
 
