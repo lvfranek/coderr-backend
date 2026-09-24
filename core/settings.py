@@ -49,6 +49,15 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
+
+"""
+Behind nginx, HTTPS ends at the proxy. Trust its X-Forwarded-Proto header
+so Django knows the request was secure (needed for the admin login).
+"""
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+CSRF_TRUSTED_ORIGINS = [f'https://{host}' for host in ALLOWED_HOSTS]
+
+
 """Application definition"""
 
 INSTALLED_APPS = [
@@ -151,6 +160,7 @@ https://docs.djangoproject.com/en/6.0/howto/static-files/
 """
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
