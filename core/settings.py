@@ -183,5 +183,9 @@ REST_FRAMEWORK = {
     ],
 }
 
-"""The frontend runs on a different port (e.g. Live Server), so allow CORS."""
-CORS_ALLOW_ALL_ORIGINS = True
+"""Only the deployed frontend and local Live Server may call the API."""
+CORS_ALLOWED_ORIGINS = [
+    'https://coderr-frontend-chi.vercel.app',
+    'http://127.0.0.1:5500',
+    'http://localhost:5500',
+]
